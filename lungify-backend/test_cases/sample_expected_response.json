@@ -1,0 +1,39 @@
+{
+  "request_id": "LNG-SAMPLE",
+  "model_status": "sample",
+  "input_mode": "sample",
+  "final_assessment": {
+    "label": "Malignant",
+    "risk_level": "High",
+    "confidence": 0.87,
+    "source": "Binary Cancer Screening Engine"
+  },
+  "subtype_suggestion": {
+    "label": "Primary Lung Cancer",
+    "confidence": 0.72,
+    "probabilities": {
+      "Benign/Unknown": 0.08,
+      "Primary Lung Ca": 0.72,
+      "Metastatic": 0.2
+    },
+    "source": "Multiclass Extension Engine"
+  },
+  "segmentation": {
+    "available": true,
+    "mask_image_base64": null,
+    "overlay_image_base64": null,
+    "original_image_base64": null,
+    "localization_scope": "sample response",
+    "source": "3D U-Net Tumor Segmentation"
+  },
+  "report": {
+    "summary": "The uploaded CT scan shows a high-risk malignant prediction with suspected tumor region highlighted.",
+    "recommendation": "Radiologist review is recommended.",
+    "disclaimer": "Lungify is a research prototype and clinical decision-support concept. It is not a replacement for radiologists, medical diagnosis, or professional clinical judgment."
+  },
+  "warnings": [
+    "Sample response only; no patient data was processed."
+  ],
+  "processing_time_ms": 0
+}
+

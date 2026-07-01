@@ -1,0 +1,17 @@
+fastapi
+uvicorn[standard]
+python-multipart
+pydantic
+pydicom
+numpy
+scipy
+pillow
+opencv-python-headless
+torch
+torchvision
+joblib
+scikit-learn==1.7.2
+python-dotenv
+aiofiles
+pytest
+httpx
