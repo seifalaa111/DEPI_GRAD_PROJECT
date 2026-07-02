@@ -5,6 +5,11 @@ Lungify is split into two deployable apps:
 - `lungify-backend`: FastAPI AI service for CT volume inference, report building, and Hugging Face Docker Spaces deployment.
 - `lungify-frontend`: Next.js website and demo interface for Vercel deployment.
 
+Full project documentation:
+
+- [PROJECT_DOCUMENTATION.md](./PROJECT_DOCUMENTATION.md)
+- `Lungify_Project_Documentation_Expanded.docx` for the Word handoff version
+
 ## Local Run
 
 Backend:
@@ -22,7 +27,7 @@ npm install
 npm run dev
 ```
 
-Set `NEXT_PUBLIC_API_URL=http://localhost:7860` for local frontend-to-backend calls.
+Set `LUNGIFY_BACKEND_URL=http://localhost:7860` for local frontend-to-backend calls.
 
 ## Verification
 
@@ -35,4 +40,3 @@ npm run build
 ```
 
 Real inference requires a de-identified DICOM CT series ZIP. Single `.dcm`, `.png`, and `.jpg` uploads are preview mode only.
-
