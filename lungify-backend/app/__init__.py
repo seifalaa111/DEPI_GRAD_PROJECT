@@ -1,0 +1,2 @@
+"""Lungify FastAPI backend package."""
+
