@@ -17,6 +17,8 @@ class Settings:
     device: str = os.getenv("LUNGIFY_DEVICE", "auto")
     skip_model_load: bool = os.getenv("LUNGIFY_SKIP_MODEL_LOAD", "0") == "1"
     max_upload_mb: int = int(os.getenv("LUNGIFY_MAX_UPLOAD_MB", "512"))
+    max_extracted_mb: int = int(os.getenv("LUNGIFY_MAX_EXTRACTED_MB", "1024"))
+    max_dicom_files: int = int(os.getenv("LUNGIFY_MAX_DICOM_FILES", "5000"))
     cors_origins: tuple[str, ...] = tuple(
         origin.strip()
         for origin in os.getenv(
@@ -25,6 +27,7 @@ class Settings:
         ).split(",")
         if origin.strip()
     )
+    allow_all_cors_origins: bool = cors_origins == ("*",)
     configs_dir: Path = ROOT_DIR / "configs"
     weights_dir: Path = ROOT_DIR / "weights"
     pipeline_a_weight: Path = ROOT_DIR / "weights" / "pipeline_a_model.pkl"
@@ -35,4 +38,3 @@ class Settings:
 
 
 settings = Settings()
-

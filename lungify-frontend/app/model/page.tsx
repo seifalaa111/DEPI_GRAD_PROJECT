@@ -1,6 +1,7 @@
 import Image from "next/image";
 import { Activity, BarChart3, BrainCircuit, ScanLine } from "lucide-react";
 import type { ReactNode } from "react";
+import { ModelInsights } from "@/components/ModelInsights";
 
 const figures = [
   { src: "/assets/training_curves_binary.png", title: "Pipeline A Training Curves" },
@@ -24,6 +25,7 @@ export default function ModelPage() {
           <ModelCard icon={<BarChart3 />} label="Backend Mode" value="FastAPI on Docker Space" />
         </div>
       </section>
+      <ModelInsights />
       <section className="figure-grid">
         {figures.map((figure) => (
           <article className="figure-card" key={figure.src}>

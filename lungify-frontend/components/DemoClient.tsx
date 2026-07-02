@@ -1,8 +1,9 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { AlertCircle, FileArchive, FileText, Image as ImageIcon, Loader2, Play, RefreshCcw, ScanLine, UploadCloud } from "lucide-react";
-import { analyzeScan, getSampleReport, imageSrc, type LungifyPrediction } from "@/src/lib/api";
+import { analyzeScan, getBackendHealth, getSampleReport, imageSrc } from "@/src/lib/api";
+import type { LungifyHealth, LungifyPrediction } from "@/src/lib/lungify";
 
 const tabs = ["Original", "Mask", "Overlay", "Report"] as const;
 type Tab = (typeof tabs)[number];
@@ -10,9 +11,25 @@ type Tab = (typeof tabs)[number];
 export function DemoClient() {
   const [file, setFile] = useState<File | null>(null);
   const [result, setResult] = useState<LungifyPrediction | null>(null);
+  const [backend, setBackend] = useState<LungifyHealth | null>(null);
   const [activeTab, setActiveTab] = useState<Tab>("Report");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [backendError, setBackendError] = useState<string | null>(null);
+
+  async function refreshBackendHealth() {
+    try {
+      const health = await getBackendHealth();
+      setBackend(health);
+      setBackendError(null);
+    } catch (err) {
+      setBackendError(err instanceof Error ? err.message : "Could not load backend health.");
+    }
+  }
+
+  useEffect(() => {
+    void refreshBackendHealth();
+  }, []);
 
   const statusLabel = useMemo(() => {
     if (!result) return "Awaiting scan";
@@ -20,6 +37,23 @@ export function DemoClient() {
     if (result.model_status === "sample") return "Sample mode";
     return "Preview mode";
   }, [result]);
+
+  const backendLabel = useMemo(() => {
+    if (loading) return "Processing";
+    if (backend?.backend_mode === "proxy") {
+      return backend.status === "ok" ? "Connected" : "Degraded";
+    }
+    if (backend?.backend_mode === "demo") return "Built-in demo";
+    if (backendError) return "Unavailable";
+    return "Checking";
+  }, [backend, backendError, loading]);
+
+  const helperNote =
+    backend?.backend_mode === "demo"
+      ? "Built-in preview/sample mode is active. Set LUNGIFY_BACKEND_URL in Vercel to enable real DICOM ZIP inference."
+      : backend?.status === "ok"
+        ? "Real backend connected. Upload a de-identified DICOM CT series ZIP for full inference."
+        : backend?.warnings?.[0] || backendError;
 
   async function runAnalysis() {
     if (!file) {
@@ -36,6 +70,7 @@ export function DemoClient() {
       setError(err instanceof Error ? err.message : "Analysis failed.");
     } finally {
       setLoading(false);
+      void refreshBackendHealth();
     }
   }
 
@@ -50,6 +85,7 @@ export function DemoClient() {
       setError(err instanceof Error ? err.message : "Could not load sample report.");
     } finally {
       setLoading(false);
+      void refreshBackendHealth();
     }
   }
 
@@ -88,9 +124,14 @@ export function DemoClient() {
           </button>
         </div>
         <div className="status-strip">
-          <span>AI Backend: {loading ? "Processing" : "Online"}</span>
+          <span>AI Backend: {backendLabel}</span>
           <span>Model Mode: {statusLabel}</span>
         </div>
+        {helperNote && (
+          <div className="status-strip">
+            <span>{helperNote}</span>
+          </div>
+        )}
         {error && (
           <div className="error-box">
             <AlertCircle size={18} />

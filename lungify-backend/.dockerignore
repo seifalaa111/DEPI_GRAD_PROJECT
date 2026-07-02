@@ -1,0 +1,8 @@
+.venv-backend
+__pycache__
+.pytest_cache
+*.pyc
+*.pyo
+*.pyd
+Thumbs.db
+.DS_Store
