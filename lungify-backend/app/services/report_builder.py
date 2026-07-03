@@ -1,12 +1,34 @@
 from __future__ import annotations
 
+from functools import lru_cache
 from typing import Any
+
+import numpy as np
+
+from app.utils.image_export import make_mask_png, make_original_png, make_overlay_png
 
 
 DISCLAIMER = (
     "Lungify is a research prototype and clinical decision-support concept. It is not a replacement "
     "for radiologists, medical diagnosis, or professional clinical judgment."
 )
+
+
+@lru_cache(maxsize=1)
+def _sample_segmentation_images() -> dict[str, str]:
+    """Build small, self-contained demo images so the sample response has a
+    consistent, non-empty segmentation section (original / mask / overlay)."""
+    size = 96
+    yy, xx = np.ogrid[:size, :size]
+    center = size / 2.0
+    tissue = 1.0 - (np.sqrt((yy - center) ** 2 + (xx - center) ** 2) / (size / 1.4))
+    tissue = np.clip(tissue, 0.0, 1.0).astype(np.float32)
+    mask = ((yy - size * 0.42) ** 2 + (xx - size * 0.55) ** 2 < (size * 0.12) ** 2).astype(np.float32)
+    return {
+        "original_image_base64": make_original_png(tissue),
+        "mask_image_base64": make_mask_png(mask),
+        "overlay_image_base64": make_overlay_png(tissue, mask),
+    }
 
 
 def risk_level(label: str, confidence: float) -> str:
@@ -152,11 +174,9 @@ def sample_report() -> dict[str, Any]:
         },
         "segmentation": {
             "available": True,
-            "mask_image_base64": None,
-            "overlay_image_base64": None,
-            "original_image_base64": None,
             "localization_scope": "sample response",
             "source": "3D U-Net Tumor Segmentation",
+            **_sample_segmentation_images(),
         },
         "report": {
             "summary": "The uploaded CT scan shows a high-risk malignant prediction with suspected tumor region highlighted.",

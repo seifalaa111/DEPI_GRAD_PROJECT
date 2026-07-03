@@ -20,9 +20,9 @@
   },
   "segmentation": {
     "available": true,
-    "mask_image_base64": null,
-    "overlay_image_base64": null,
-    "original_image_base64": null,
+    "mask_image_base64": "<base64-encoded PNG>",
+    "overlay_image_base64": "<base64-encoded PNG>",
+    "original_image_base64": "<base64-encoded PNG>",
     "localization_scope": "sample response",
     "source": "3D U-Net Tumor Segmentation"
   },

@@ -14,12 +14,15 @@ def resample(vol: np.ndarray, spacing: tuple[float, float, float], target_spacin
 
 
 def crop_pad(vol: np.ndarray, shape: tuple[int, int, int]) -> np.ndarray:
-    if vol.shape != shape:
-        factors = tuple(shape[i] / vol.shape[i] for i in range(3))
-        vol = zoom(vol, factors, order=1).astype(vol.dtype)
-        return vol  
-    
-    return vol
+    """Centre-crop or zero-pad ``vol`` to ``shape`` on each axis independently.
+
+    This runs after ``resample`` has already fixed the physical voxel spacing, so
+    the final size adjustment must preserve that spacing (crop/pad) rather than
+    re-interpolate the volume. Each axis is cropped if it is larger than the
+    target and symmetrically zero-padded if it is smaller.
+    """
+    if vol.shape == shape:
+        return vol
     tz, ty, tx = shape
     z, y, x = vol.shape
     out = np.zeros(shape, dtype=vol.dtype)

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import logging
 import shutil
 import tempfile
 import time
@@ -15,6 +16,8 @@ from app.schemas import HealthResponse, ModelInfoResponse, PredictionResponse, S
 from app.services.report_builder import build_report, preview_report, sample_report
 from app.utils.exceptions import LungifyError, ModelUnavailableError, ValidationError
 from app.utils.validation import classify_upload, safe_extract_zip
+
+logger = logging.getLogger("lungify")
 
 router = APIRouter()
 
@@ -138,7 +141,14 @@ async def predict(
     except LungifyError as exc:
         raise HTTPException(status_code=exc.status_code, detail={"code": exc.code, "message": exc.message}) from exc
     except Exception as exc:
-        raise HTTPException(status_code=500, detail={"code": "inference_error", "message": str(exc)}) from exc
+        logger.exception("Unexpected inference error (request_id=%s)", request_id)
+        raise HTTPException(
+            status_code=500,
+            detail={
+                "code": "inference_error",
+                "message": "Internal error while processing the scan. Please try again or contact support.",
+            },
+        ) from exc
 
 
 def _parse_metadata(metadata: str | None) -> dict[str, Any] | None:

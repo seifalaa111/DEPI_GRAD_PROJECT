@@ -44,8 +44,11 @@ def load_dicom_series(dicom_dir: Path) -> tuple[np.ndarray, tuple[float, float, 
 
     slices.sort(key=sort_key)
 
-    # ← التعديل هنا: 512×512 ثابت
+    # Every slice is normalised to a fixed 512x512 in-plane grid.
     vol = np.empty((len(slices), 512, 512), dtype=np.float32)
+    # Original in-plane size (rows, cols) of the series, used to rescale the
+    # reported PixelSpacing so physical extent is preserved after the resize.
+    in_plane_shape = (512, 512)
 
     for idx, ds in enumerate(slices):
         raw = ds.pixel_array.astype(np.float32)
@@ -53,7 +56,10 @@ def load_dicom_series(dicom_dir: Path) -> tuple[np.ndarray, tuple[float, float, 
         intercept = float(getattr(ds, "RescaleIntercept", 0.0))
         raw_hu = raw * slope + intercept
 
-        # ← التعديل هنا: resize لو مش 512×512
+        if idx == 0:
+            in_plane_shape = raw_hu.shape
+
+        # Resample the slice to 512x512 when it does not already match.
         if raw_hu.shape != (512, 512):
             zy = 512 / raw_hu.shape[0]
             zx = 512 / raw_hu.shape[1]
@@ -68,6 +74,16 @@ def load_dicom_series(dicom_dir: Path) -> tuple[np.ndarray, tuple[float, float, 
     except Exception:
         z_spacing = float(getattr(slices[0], "SliceThickness", 1.0))
 
+    # PixelSpacing is [row_spacing (y), col_spacing (x)]. Because every slice was
+    # resized to 512x512, scale the spacing by the original/512 ratio so the
+    # physical field-of-view stays correct for the downstream spacing-based
+    # resample step.
     pixel_spacing = getattr(slices[0], "PixelSpacing", [1.0, 1.0])
-    spacing = (z_spacing, float(pixel_spacing[0]), float(pixel_spacing[1]))
+    row_scale = float(in_plane_shape[0]) / 512.0
+    col_scale = float(in_plane_shape[1]) / 512.0
+    spacing = (
+        z_spacing,
+        float(pixel_spacing[0]) * row_scale,
+        float(pixel_spacing[1]) * col_scale,
+    )
     return vol, spacing
